@@ -5,7 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
-#include <tchar.h>
+
+#include "Event.h"
 
 namespace AF {
 	class Window
@@ -21,6 +22,12 @@ namespace AF {
 		Window(const std::wstring& title, int width, int height, Mode mode = CUSTOM);
 		~Window();
 
+		void SetCurrentEvent(AF::Event::Type type);
+
+		bool IsOpen() { return !m_ShouldClose; }
+		void Close();
+		bool PollEvent(AF::Event& event);
+
 		void Update();
 
 	private:
@@ -33,6 +40,10 @@ namespace AF {
 		HWND m_WindowHandle;
 		std::wstring m_Title;
 		std::wstring m_ClassName;
+
+		bool m_ShouldClose;
+
+		Event m_CurrentEvent;
 
 	};
 

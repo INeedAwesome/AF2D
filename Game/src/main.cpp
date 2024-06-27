@@ -1,25 +1,32 @@
 #include <AF2D.h>
 
-int main(int argc, char* argv[])
+int Main()
 {
-	AF::Window window(L"2D Game", 900, 550, AF::Window::FULLSCREEN);
+	AF::Window window(L"2D Game", 900, 550, AF::Window::CUSTOM);
 
-
-	MSG msg;
-	bool run = true;
-	while (run)
+	AF::Event event;
+	while (window.IsOpen())
 	{
-		while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		while (window.PollEvent(event))
 		{
-			if (msg.message == WM_QUIT)
-				run = false;
-			DispatchMessage(&msg);
-			TranslateMessage(&msg);
+			if (event.type == AF::Event::CLOSED)
+				window.Close();
 		}
 
 		window.Update();
 	}
 
-
 	return 0;
 }
+
+#ifdef AF_DIST
+int wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR, _In_ int)
+{
+	return Main();
+}
+#else
+int main(int argc, char* argv[])
+{
+	return Main();
+}
+#endif

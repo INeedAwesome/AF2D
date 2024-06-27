@@ -4,11 +4,13 @@
 LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
+	: m_WindowHandle(0), m_Data(nullptr), m_ShouldClose(false), m_CurrentEvent()
 {
 	m_Title = title;
 	m_ClassName = title + L"AF2DApp";
 	m_Width = width;
 	m_Height = height;
+	m_Mode = mode;
 
 	bool custom = false;
 	bool maximized = false;
@@ -65,7 +67,7 @@ AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
 	m_WindowHandle = CreateWindowEx(0, m_ClassName.c_str(), m_Title.c_str(), style,
 		//0, 0, rect.right, rect.bottom,
 		custom ? CW_USEDEFAULT : rect.left, custom ? CW_USEDEFAULT : rect.top, rect.right, rect.bottom,
-		NULL,NULL, GetModuleHandle(nullptr), NULL
+		NULL,NULL, GetModuleHandle(nullptr), this
 	);
 
 	if (!m_WindowHandle)
@@ -92,6 +94,27 @@ AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
 
 AF::Window::~Window()
 {
+	DestroyWindow(m_WindowHandle);
+	UnregisterClass(m_ClassName.c_str(), GetModuleHandle(nullptr));
+}
+
+void AF::Window::Close()
+{
+	m_ShouldClose = true; 
+}
+
+bool AF::Window::PollEvent(AF::Event& event)
+{
+	MSG msg;
+	if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+	{		
+		DispatchMessage(&msg);
+		TranslateMessage(&msg);
+		event = m_CurrentEvent;
+		return true;
+	}
+
+	return false;
 }
 
 void AF::Window::Update()
@@ -99,7 +122,30 @@ void AF::Window::Update()
 	UpdateWindow(m_WindowHandle);
 }
 
+void AF::Window::SetCurrentEvent(AF::Event::Type type)
+{
+	m_CurrentEvent.type = type;
+}
+
 LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	return DefWindowProc(hwnd, msg, wParam, lParam);
+	static AF::Window* thisWindow= nullptr;
+
+	switch (msg)
+	{
+	case WM_CREATE: 
+	{
+		CREATESTRUCT* ptrCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
+		thisWindow = reinterpret_cast<AF::Window*>(ptrCreate->lpCreateParams);
+		break;
+	}
+	case WM_DESTROY:
+		thisWindow->SetCurrentEvent(AF::Event::CLOSED);
+		break;
+
+	default:
+		return DefWindowProc(hwnd, msg, wParam, lParam);
+	}
+
+	return 0;
 }
