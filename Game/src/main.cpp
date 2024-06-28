@@ -7,6 +7,7 @@ int Main()
 	AF::Window window(L"2D Game", 1280, 720, AF::Window::CUSTOM);
 
 	AF::Renderer::Init();
+	AF::Renderer::SetScale(16);
 
 	AF::Event event;
 	while (window.IsOpen())
@@ -16,14 +17,12 @@ int Main()
 			if (event.type == AF::Event::CLOSED)
 				window.Close();
 			if (event.type == AF::Event::RESIZED)
-				std::cout << "Resized" << std::endl;
-			//if (event.type == AF::Event::MOUSE_MOVE)
-				//std::cout << "Mouse moved" << std::endl;
+				AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
 		}
 
 		AF::Renderer::Begin();
 
-		AF::Renderer::DrawQuad();
+		AF::Renderer::DrawQuad({ 2, 2 }, {1, 1});
 
 		AF::Renderer::End();
 

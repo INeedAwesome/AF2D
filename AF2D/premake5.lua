@@ -12,6 +12,7 @@ project "AF2D"
 	includedirs
 	{
 		"../Dependencies/glad/include",
+		"../Dependencies/glm",
 		"src/"
 	}
 

@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "AF2D/Renderer/Shader.h"
+
 #include <glad/glad.h>
 
 namespace AF {
@@ -12,15 +14,21 @@ namespace AF {
 		GLuint VertexBuffer;
 		GLuint ElementBuffer;
 
-		GLuint ShaderProgram;
+		Shader shader;
+
+		unsigned int Width;
+		unsigned int Height;
+		int Scale;
+
 	};
 
 	static float verticesData[] = {
-		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f,
-		 0.5f, -0.5f, 0.0f,		1.0f, 0.0f,
-		 0.5f,  0.5f, 0.0f,		1.0f, 1.0f,
-		-0.5f,  0.5f, 0.0f,		0.0f, 1.0f
+		-0.0f, -0.0f, 0.0f,		0.0f, 0.0f,
+		 1.0f, -0.0f, 0.0f,		1.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f,		1.0f, 1.0f,
+		-0.0f,  1.0f, 0.0f,		0.0f, 1.0f
 	};
+
 
 	static unsigned int elements[] = {
 		0, 1, 2, 0, 2, 3
@@ -57,9 +65,12 @@ layout (location = 1) in vec2 aTexCoords;
 
 out vec2 oTexCoords;
 
+uniform mat4 transform;
+uniform mat4 view;
+
 void main()
 {
-	gl_Position = vec4(aPos, 1.0);
+	gl_Position = view * transform * vec4(aPos, 1.0);
 	oTexCoords = aTexCoords;
 }
 )""";
@@ -73,46 +84,7 @@ void main()
 	FragColor = vec4(oTexCoords.x, oTexCoords.y, 0.0f, 1.0f);
 } 
 )""";
-
-		const char* vertexSrc = vertexShaderSource.c_str();
-		const char* fragmentSrc = fragmentShaderSource.c_str();
-		unsigned int vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-		unsigned int fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
-		glShaderSource(vertexShaderID, 1, &vertexSrc, 0);
-		glShaderSource(fragmentShaderID, 1, &fragmentSrc, 0);
-		glCompileShader(vertexShaderID);
-		glCompileShader(fragmentShaderID);
-
-		int success = 0;
-		char infoLog[512] = { 0 };
-		glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &success);
-		if (!success)
-		{
-			glGetShaderInfoLog(vertexShaderID, 512, NULL, infoLog);
-			std::cout << infoLog << std::endl;
-		}
-		glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &success);
-		if (!success)
-		{
-			glGetShaderInfoLog(fragmentShaderID, 512, NULL, infoLog);
-			std::cout << infoLog << std::endl;
-		}
-
-		s_Data->ShaderProgram = glCreateProgram();
-		glAttachShader(s_Data->ShaderProgram, vertexShaderID);
-		glAttachShader(s_Data->ShaderProgram, fragmentShaderID);
-		glLinkProgram(s_Data->ShaderProgram);
-
-		glGetProgramiv(s_Data->ShaderProgram, GL_LINK_STATUS, &success);
-		if (!success)
-		{
-			glGetProgramInfoLog(s_Data->ShaderProgram, 512, NULL, infoLog);
-			std::cout << infoLog << std::endl;
-		}
-		glUseProgram(s_Data->ShaderProgram);
-		glDeleteShader(vertexShaderID);
-		glDeleteShader(fragmentShaderID);
+		s_Data->shader.Init(vertexShaderSource, fragmentShaderSource);
 
 	}
 
@@ -131,9 +103,37 @@ void main()
 	{
 	}
 
-	void Renderer::DrawQuad()
+	void Renderer::Resize(int newWidth, int newHeight)
 	{
-		glUseProgram(s_Data->ShaderProgram);
+		glViewport(0, 0, newWidth, newHeight);
+		s_Data->Width = newWidth;
+		s_Data->Height= newHeight;
+	}
+
+	void Renderer::SetScale(int scale)
+	{
+		s_Data->Scale = scale;
+	}
+
+	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size)
+	{
+		s_Data->shader.Bind();
+
+		glm::mat4 view = glm::ortho(0.0f, ((float)s_Data->Width/ (float)s_Data->Height)* (float)s_Data->Scale, 0.0f, (float)s_Data->Scale, -100.0f, 100.0f);
+		glm::mat4 translation = glm::mat4(1);
+		translation = glm::scale(translation, glm::vec3(1.0f));
+
+		s_Data->shader.SetUniform("translation", translation);
+		s_Data->shader.SetUniform("view", view);
+
+		glm::mat4 transform = // TRS - transformation rotation scale
+			glm::translate(glm::mat4(1.0f), { position.x, position.y, 0.0f }) *
+			// rotation
+			glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+
+		s_Data->shader.SetUniform("transform", transform);
+
+
 		glBindVertexArray(s_Data->VertexArray);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}

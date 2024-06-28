@@ -65,6 +65,9 @@ AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
 		return;
 	}
 
+	m_Width = rect.right;
+	m_Height = rect.bottom;
+
 	// Create the window
 	m_WindowHandle = CreateWindowEx(0, m_ClassName.c_str(), m_Title.c_str(), style,
 		//0, 0, rect.right, rect.bottom,
@@ -126,6 +129,13 @@ bool AF::Window::PollEvent(AF::Event& event)
 
 void AF::Window::Update()
 {
+	RECT rect;
+	if (GetClientRect(m_WindowHandle, &rect))
+	{
+		m_Width = rect.right - rect.left;
+		m_Height = rect.bottom - rect.top;
+	}
+
 	HDC windowDC = GetDC(m_WindowHandle);
 	SwapBuffers(windowDC);
 }

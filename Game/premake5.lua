@@ -8,6 +8,7 @@ project "Game"
 
 	includedirs
 	{
+		"../Dependencies/glm",
 		"../AF2D/src/",
 		"src/"
 	}

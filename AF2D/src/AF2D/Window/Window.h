@@ -25,6 +25,9 @@ namespace AF {
 		void SetCurrentEvent(AF::Event::Type type);
 		void InitOpenGL();
 
+		unsigned int GetWidth() const { return m_Width; }
+		unsigned int GetHeight() const { return m_Height; }
+
 		bool IsOpen() { return !m_ShouldClose; }
 		void Close();
 		bool PollEvent(AF::Event& event);
