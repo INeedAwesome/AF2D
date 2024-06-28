@@ -6,7 +6,7 @@
 #define NOMINMAX
 #include <Windows.h>
 
-#include "Event.h"
+#include "AF2D/Event.h"
 
 namespace AF {
 	class Window
@@ -23,6 +23,7 @@ namespace AF {
 		~Window();
 
 		void SetCurrentEvent(AF::Event::Type type);
+		void InitOpenGL();
 
 		bool IsOpen() { return !m_ShouldClose; }
 		void Close();
@@ -35,8 +36,6 @@ namespace AF {
 		unsigned int m_Width;
 		unsigned int m_Height;
 
-		void* m_Data;
-
 		HWND m_WindowHandle;
 		std::wstring m_Title;
 		std::wstring m_ClassName;
@@ -44,6 +43,8 @@ namespace AF {
 		bool m_ShouldClose;
 
 		Event m_CurrentEvent;
+
+		HGLRC m_OpenGLRenderingContext;
 
 	};
 

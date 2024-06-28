@@ -1,28 +1,17 @@
-project "AF2D"
+project "glad"
 	kind "StaticLib"
-	language "C++"
-	cppdialect "C++20"
+	language "C"
 	staticruntime "on"
 
-	pchheader "afpch.h"
-	pchsource "../%{prj.name}/src/afpch.cpp"
-
-	files { "src/**.h", "src/**.cpp" }
+	files { "include/**.h", "src/**.c" }
 
 	includedirs
 	{
-		"../Dependencies/glad/include",
-		"src/"
+		"include/"
 	}
 
-	links
-	{
-		"glad",
-		"Opengl32.lib"
-	}
-
-	targetdir ("../bin/" .. outputdir .. "-%{prj.name}")
-	objdir ("../bin-int/" .. outputdir .. "-%{prj.name}")
+	targetdir ("../../bin/" .. outputdir .. "-%{prj.name}")
+	objdir ("../../bin-int/" .. outputdir .. "-%{prj.name}")
 
 	filter "system:windows"
 		systemversion "latest"

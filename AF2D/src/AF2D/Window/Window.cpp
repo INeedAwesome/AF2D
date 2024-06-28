@@ -1,10 +1,12 @@
 #include "afpch.h"
 #include "Window.h"
 
+#include <glad/glad.h>
+
 LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
-	: m_WindowHandle(0), m_Data(nullptr), m_ShouldClose(false), m_CurrentEvent()
+	: m_WindowHandle(0), m_ShouldClose(false), m_CurrentEvent()
 {
 	m_Title = title;
 	m_ClassName = title + L"AF2DApp";
@@ -76,6 +78,8 @@ AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
 		return;
 	}
 
+	InitOpenGL();
+
 	if (fullscreen)
 	{
 		int monitorWidth = GetSystemMetrics(SM_CXSCREEN);
@@ -87,9 +91,9 @@ AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
 		SetWindowPos(m_WindowHandle, 0, 0, 0, m_Width, m_Height, SWP_SHOWWINDOW);
 	}
 
-	
 	ShowWindow(m_WindowHandle, maximized ? SW_SHOWMAXIMIZED : SW_SHOW);
-	
+
+	UpdateWindow(m_WindowHandle);
 }
 
 AF::Window::~Window()
@@ -114,17 +118,68 @@ bool AF::Window::PollEvent(AF::Event& event)
 		return true;
 	}
 
+	m_CurrentEvent.type = Event::NONE;
+	event.type = Event::NONE;
+
 	return false;
 }
 
 void AF::Window::Update()
 {
-	UpdateWindow(m_WindowHandle);
+	HDC windowDC = GetDC(m_WindowHandle);
+	SwapBuffers(windowDC);
 }
 
 void AF::Window::SetCurrentEvent(AF::Event::Type type)
 {
 	m_CurrentEvent.type = type;
+}
+
+void AF::Window::InitOpenGL()
+{
+	PIXELFORMATDESCRIPTOR pfd =
+	{
+		sizeof(PIXELFORMATDESCRIPTOR),
+		1,
+		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,    //Flags
+		PFD_TYPE_RGBA,        // The kind of framebuffer. RGBA or palette.
+		32,                   // Colordepth of the framebuffer.
+		0, 0, 0, 0, 0, 0,
+		0,
+		0,
+		0,
+		0, 0, 0, 0,
+		24,                   // Number of bits for the depthbuffer
+		8,                    // Number of bits for the stencilbuffer
+		0,                    // Number of Aux buffers in the framebuffer.
+		PFD_MAIN_PLANE,
+		0,
+		0, 0, 0
+	};
+
+	HDC deviceContext = GetDC(m_WindowHandle);
+
+	int pixelFormat = ChoosePixelFormat(deviceContext, &pfd);
+	if (pixelFormat == 0)
+	{
+		std::cout << "Pixel format could not be chosen!" << std::endl;
+		return;
+	}
+	SetPixelFormat(deviceContext, pixelFormat, &pfd);
+
+	m_OpenGLRenderingContext = wglCreateContext(deviceContext);
+	if (m_OpenGLRenderingContext == NULL)
+	{
+		std::cout << "m_OpenGLRenderingContext was NULL!" << std::endl;
+		return;
+	}
+	if (wglMakeCurrent(deviceContext, m_OpenGLRenderingContext) == FALSE)
+	{
+		std::cout << "Could not make context current!" << std::endl;
+		return;
+	}
+
+	gladLoadGL();
 }
 
 LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -141,6 +196,14 @@ LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_DESTROY:
 		thisWindow->SetCurrentEvent(AF::Event::CLOSED);
+		break;
+
+	case WM_SIZE:
+		thisWindow->SetCurrentEvent(AF::Event::RESIZED);
+		break;
+
+	case WM_MOUSEMOVE:
+		thisWindow->SetCurrentEvent(AF::Event::MOUSE_MOVE);
 		break;
 
 	default:

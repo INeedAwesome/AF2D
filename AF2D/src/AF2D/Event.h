@@ -6,7 +6,9 @@ namespace AF {
 		enum Type	
 		{
 			NONE, 
-			CLOSED
+			CLOSED,
+			RESIZED,
+			MOUSE_MOVE
 		};
 		
 		Type type;

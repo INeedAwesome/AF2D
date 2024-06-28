@@ -5,5 +5,9 @@ workspace "AF2D"
 	
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+group "Dependencies"
+	include "Dependencies/glad"
+
+group ""
 include "AF2D"
 include "Game"
