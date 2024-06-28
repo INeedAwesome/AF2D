@@ -120,10 +120,6 @@ void main()
 		s_Data->shader.Bind();
 
 		glm::mat4 view = glm::ortho(0.0f, ((float)s_Data->Width/ (float)s_Data->Height)* (float)s_Data->Scale, 0.0f, (float)s_Data->Scale, -100.0f, 100.0f);
-		glm::mat4 translation = glm::mat4(1);
-		translation = glm::scale(translation, glm::vec3(1.0f));
-
-		s_Data->shader.SetUniform("translation", translation);
 		s_Data->shader.SetUniform("view", view);
 
 		glm::mat4 transform = // TRS - transformation rotation scale
