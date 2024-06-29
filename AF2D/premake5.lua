@@ -13,6 +13,7 @@ project "AF2D"
 	{
 		"../Dependencies/glad/include",
 		"../Dependencies/glm",
+		"../Dependencies/stb",
 		"src/"
 	}
 

@@ -3,18 +3,18 @@
 
 #include <string>
 
-#include "AF2D/Renderer/Shader.h"
+#include "AF2D/OpenGL/Shader.h"
+#include "AF2D/OpenGL/VertexArray.h"
+#include "AF2D/OpenGL/Texture2D.h"
 
 #include <glad/glad.h>
 
 namespace AF {
 
 	struct RendererData {
-		GLuint VertexArray;
-		GLuint VertexBuffer;
-		GLuint ElementBuffer;
-
+		vertexArray vertexArray;
 		Shader shader;
+		Texture2D texture;
 
 		unsigned int Width;
 		unsigned int Height;
@@ -23,12 +23,11 @@ namespace AF {
 	};
 
 	static float verticesData[] = {
-		-0.0f, -0.0f, 0.0f,		0.0f, 0.0f,
-		 1.0f, -0.0f, 0.0f,		1.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f,		1.0f, 1.0f,
-		-0.0f,  1.0f, 0.0f,		0.0f, 1.0f
+		0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f,		1.0f, 1.0f,
+		0.0f, 1.0f, 0.0f,		0.0f, 1.0f
 	};
-
 
 	static unsigned int elements[] = {
 		0, 1, 2, 0, 2, 3
@@ -40,24 +39,7 @@ namespace AF {
 	{
 		s_Data = new RendererData();
 
-		glGenVertexArrays(1, &s_Data->VertexArray);
-		glBindVertexArray(s_Data->VertexArray);
-
-		glGenBuffers(1, &s_Data->VertexBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, s_Data->VertexBuffer);
-		glBufferData(GL_ARRAY_BUFFER, _countof(verticesData) * sizeof(float), verticesData, GL_STATIC_DRAW);
-
-		glGenBuffers(1, &s_Data->ElementBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data->ElementBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, _countof(elements)*sizeof(unsigned int), elements, GL_STATIC_DRAW);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
-		glEnableVertexAttribArray(0);
-
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float)*3));
-		glEnableVertexAttribArray(1);
-
-		glBindVertexArray(0);
+		s_Data->vertexArray.Init(verticesData, _countof(verticesData), elements, _countof(elements));
 
 		std::string vertexShaderSource = R"""(#version 330 core
 layout (location = 0) in vec3 aPos;
@@ -86,6 +68,7 @@ void main()
 )""";
 		s_Data->shader.Init(vertexShaderSource, fragmentShaderSource);
 
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	void Renderer::Shutdown()
@@ -94,7 +77,6 @@ void main()
 
 	void Renderer::Begin()
 	{
-		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.2f, 0.4f, 1.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	}
@@ -130,8 +112,9 @@ void main()
 		s_Data->shader.SetUniform("transform", transform);
 
 
-		glBindVertexArray(s_Data->VertexArray);
+		s_Data->vertexArray.Bind();
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		s_Data->vertexArray.Unbind();
 	}
 
 }

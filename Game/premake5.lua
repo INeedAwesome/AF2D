@@ -9,6 +9,7 @@ project "Game"
 	includedirs
 	{
 		"../Dependencies/glm",
+		"../Dependencies/stb",
 		"../AF2D/src/",
 		"src/"
 	}
