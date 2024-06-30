@@ -6,7 +6,7 @@
 LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
-	: m_WindowHandle(0), m_ShouldClose(false), m_CurrentEvent()
+	: m_WindowHandle(0), m_ShouldClose(false), m_Events()
 {
 	m_Title = title;
 	m_ClassName = title + L"AF2DApp";
@@ -45,6 +45,9 @@ AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
 		break;
 	}
 
+	rect.right = rect.right - rect.left;
+	rect.bottom = rect.bottom - rect.top;
+
 	// Register the window class
 	WNDCLASSEX wcex = { 0 };
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -64,9 +67,6 @@ AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
 		MessageBox(0, L"Could not register the window class!", L"Error", MB_OK | MB_ICONERROR);
 		return;
 	}
-
-	m_Width = rect.right;
-	m_Height = rect.bottom;
 
 	// Create the window
 	m_WindowHandle = CreateWindowEx(0, m_ClassName.c_str(), m_Title.c_str(), style,
@@ -110,39 +110,45 @@ void AF::Window::Close()
 	m_ShouldClose = true; 
 }
 
-bool AF::Window::PollEvent(AF::Event& event)
+bool AF::Window::PollEvent()
 {
 	MSG msg;
 	if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-	{		
+	{
 		DispatchMessage(&msg);
 		TranslateMessage(&msg);
-		event = m_CurrentEvent;
 		return true;
 	}
-
-	m_CurrentEvent.type = Event::NONE;
-	event.type = Event::NONE;
-
 	return false;
 }
 
 void AF::Window::Update()
 {
 	RECT rect;
-	if (GetClientRect(m_WindowHandle, &rect))
-	{
-		m_Width = rect.right - rect.left;
-		m_Height = rect.bottom - rect.top;
-	}
-
+	GetClientRect(m_WindowHandle, &rect);
+	m_Width = rect.right - rect.left;
+	m_Height = rect.bottom - rect.top;
+	
 	HDC windowDC = GetDC(m_WindowHandle);
 	SwapBuffers(windowDC);
 }
 
-void AF::Window::SetCurrentEvent(AF::Event::Type type)
+AF::Event::Type AF::Window::GetEvent()
 {
-	m_CurrentEvent.type = type;
+	Event event { Event::NONE };
+	int index = m_Events.size() - 1;
+	if (index < 0)
+		return event.type;
+	
+	event.type = m_Events[index];
+	m_Events.pop_back();
+
+	return event.type;
+}
+
+void AF::Window::PushEvent(AF::Event::Type type)
+{
+	m_Events.push_back(type);
 }
 
 void AF::Window::InitOpenGL()
@@ -205,15 +211,15 @@ LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	case WM_DESTROY:
-		thisWindow->SetCurrentEvent(AF::Event::CLOSED);
+		thisWindow->PushEvent(AF::Event::CLOSED);
 		break;
 
 	case WM_SIZE:
-		thisWindow->SetCurrentEvent(AF::Event::RESIZED);
+		thisWindow->PushEvent(AF::Event::RESIZED);
 		break;
 
 	case WM_MOUSEMOVE:
-		thisWindow->SetCurrentEvent(AF::Event::MOUSE_MOVE);
+		thisWindow->PushEvent(AF::Event::MOUSE_MOVE);
 		break;
 
 	default:

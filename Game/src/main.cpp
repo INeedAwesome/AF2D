@@ -13,6 +13,7 @@ int Main()
 
 	AF::Renderer::Init();
 	AF::Renderer::SetScale(16);
+	AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
 
 	AF::Texture2D texture; 
 	texture.Init("assets/auge_512_512_BGRA_32BPP.png", AF::Texture2D::LINEAR);
@@ -22,19 +23,19 @@ int Main()
 	for (int i = 0; i < 100; i++)
 	{
 		Quad quad{};
-		quad.Position = { i*2 , i*i};
+		quad.Position = { i*2 , i};
 		quad.Size = { i , i};
 		quads.push_back(quad);
 	}
 
-	AF::Event event;
 	while (window.IsOpen())
 	{
-		while (window.PollEvent(event))
+		while (window.PollEvent())
 		{
-			if (event.type == AF::Event::CLOSED)
+			AF::Event::Type event = window.GetEvent();
+			if (event == AF::Event::CLOSED)
 				window.Close();
-			if (event.type == AF::Event::RESIZED)
+			if (event == AF::Event::RESIZED)
 				AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
 		}
 

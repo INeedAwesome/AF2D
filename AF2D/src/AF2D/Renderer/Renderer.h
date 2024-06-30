@@ -17,6 +17,9 @@ namespace AF {
 		static void Begin();
 		static void End();
 
+		/*!
+		* @brief Allow the renderer to render to the specified width and height
+		*/
 		static void Resize(int newWidth, int newHeight);
 
 		/*!

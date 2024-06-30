@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -22,17 +23,19 @@ namespace AF {
 		Window(const std::wstring& title, int width, int height, Mode mode = CUSTOM);
 		~Window();
 
-		void SetCurrentEvent(AF::Event::Type type);
-		void InitOpenGL();
+		bool PollEvent();
+		AF::Event::Type GetEvent();
+		void PushEvent(AF::Event::Type type);
 
 		unsigned int GetWidth() const { return m_Width; }
 		unsigned int GetHeight() const { return m_Height; }
 
 		bool IsOpen() { return !m_ShouldClose; }
 		void Close();
-		bool PollEvent(AF::Event& event);
-
 		void Update();
+
+	private:
+		void InitOpenGL();
 
 	private:
 		Mode m_Mode;
@@ -45,7 +48,7 @@ namespace AF {
 
 		bool m_ShouldClose;
 
-		Event m_CurrentEvent;
+		std::vector<Event::Type> m_Events;
 
 		HGLRC m_OpenGLRenderingContext;
 
