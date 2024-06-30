@@ -30,16 +30,24 @@ namespace AF {
 	
 	void Texture2D::Init(const TextureBuffer& buffer, TextureScaling scaling)
 	{
+		int internalFormat = GL_RGBA32F;
 		int format = GL_RED;
 		if (buffer.m_Components == 1)
 			format = GL_RED;
 		else if (buffer.m_Components == 2)
 			format = GL_RG;
 		else if (buffer.m_Components == 3)
+		{
+			internalFormat = GL_RGB32F;
 			format = GL_RGB;
+		}
 		else if (buffer.m_Components == 4)
+		{
+			internalFormat = GL_RGBA32F;
 			format = GL_RGBA;
-		else {
+		}
+		else 
+		{
 			std::cout << "Unsupported texture! Number of texture channels exceeded 4! " << std::endl;
 			__debugbreak();
 			return;
@@ -50,7 +58,7 @@ namespace AF {
 		glGenTextures(1, &m_TextureID);
 		glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, format, buffer.m_Width, buffer.m_Height, 0, format, GL_UNSIGNED_BYTE, buffer.m_Data);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, buffer.m_Width, buffer.m_Height, 0, format, GL_UNSIGNED_BYTE, buffer.m_Data);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

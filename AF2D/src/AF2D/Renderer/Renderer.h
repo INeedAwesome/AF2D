@@ -4,6 +4,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "AF2D/OpenGL/Texture2D.h"
+
 namespace AF {
 
 	class Renderer
@@ -23,6 +25,7 @@ namespace AF {
 		static void SetScale(int scale);
 
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size);
+		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, Texture2D& texture);
 
 	private:
 

@@ -12,7 +12,11 @@ int Main()
 	AF::Window window(L"2D Game", 1280, 720, AF::Window::CUSTOM);
 
 	AF::Renderer::Init();
-	AF::Renderer::SetScale(32);
+	AF::Renderer::SetScale(16);
+
+	AF::Texture2D texture; 
+	texture.Init("assets/auge_512_512_BGRA_32BPP.png", AF::Texture2D::LINEAR);
+
 
 	std::vector<Quad> quads;
 	for (int i = 0; i < 100; i++)
@@ -36,8 +40,7 @@ int Main()
 
 		AF::Renderer::Begin();
 		
-		AF::Renderer::DrawQuad({ 0,0 }, {1, 1});
-		AF::Renderer::DrawQuad({ 1,0 }, {2, 1});
+		AF::Renderer::DrawQuad({ 1,0 }, {5, 4}, texture);
 
 		for (Quad& quad : quads)
 		{
@@ -45,6 +48,7 @@ int Main()
 		}
 
 
+		AF::Renderer::DrawQuad({ 0,0 }, {4, 4}, texture);
 
 		AF::Renderer::End();
 
