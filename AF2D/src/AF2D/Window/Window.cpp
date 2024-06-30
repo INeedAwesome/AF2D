@@ -136,7 +136,7 @@ void AF::Window::Update()
 AF::Event::Type AF::Window::GetEvent()
 {
 	Event event { Event::NONE };
-	int index = m_Events.size() - 1;
+	int index = (int)m_Events.size() - 1;
 	if (index < 0)
 		return event.type;
 	
@@ -216,6 +216,7 @@ LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 		thisWindow->PushEvent(AF::Event::RESIZED);
+		thisWindow->Update();
 		break;
 
 	case WM_MOUSEMOVE:

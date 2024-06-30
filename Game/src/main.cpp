@@ -3,7 +3,7 @@
 #include <iostream>
 
 struct Quad {
-	glm::vec2 Position;
+	glm::vec3 Position;
 	glm::vec2 Size;
 };
 
@@ -15,24 +15,34 @@ int Main()
 	AF::Renderer::SetScale(16);
 	AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
 
-	AF::Texture2D texture; 
-	texture.Init("assets/auge_512_512_BGRA_32BPP.png", AF::Texture2D::LINEAR);
+	AF::Texture2D playerTexture; 
+	playerTexture.Init("assets/gruminion.png", AF::Texture2D::LINEAR);
+
+	AF::Texture2D grassTexture;
+	grassTexture.Init("assets/grass.png", AF::Texture2D::NEAREST);
 
 
 	std::vector<Quad> quads;
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 32; i++)
 	{
-		Quad quad{};
-		quad.Position = { i*2 , i};
-		quad.Size = { i , i};
-		quads.push_back(quad);
+		for (int j = 0; j < 16; j++)
+		{
+			Quad quad{};
+			quad.Position = { i, j, 0};
+			quad.Size = { 1 , 1 };
+			quads.push_back(quad);
+		}
 	}
+
+	Quad playerQuad;
+	playerQuad.Position = { 8, 8, 1};
+	playerQuad.Size = { 1, 1 };
 
 	while (window.IsOpen())
 	{
 		while (window.PollEvent())
 		{
-			AF::Event::Type event = window.GetEvent();
+			AF::Event::Type event = window.GetEvent(); 
 			if (event == AF::Event::CLOSED)
 				window.Close();
 			if (event == AF::Event::RESIZED)
@@ -41,15 +51,15 @@ int Main()
 
 		AF::Renderer::Begin();
 		
-		AF::Renderer::DrawQuad({ 1,0 }, {5, 4}, texture);
 
-		for (Quad& quad : quads)
+		for (int i = 0; i < quads.size(); i++)
 		{
-			AF::Renderer::DrawQuad(quad.Position, quad.Size);
+			AF::Renderer::DrawQuad(quads[i].Position, quads[i].Size, grassTexture);
 		}
 
+		AF::Renderer::DrawQuad(playerQuad.Position, playerQuad.Size, playerTexture);
 
-		AF::Renderer::DrawQuad({ 0,0 }, {4, 4}, texture);
+		
 
 		AF::Renderer::End();
 

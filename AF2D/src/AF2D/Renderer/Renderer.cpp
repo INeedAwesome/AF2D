@@ -62,11 +62,13 @@ out vec4 FragColor;
 in vec2 oTexCoords;
 
 uniform sampler2D boundTexture;
+uniform vec4 colorTint;
+
 
 void main()
 {
 	//FragColor = vec4(oTexCoords.x, oTexCoords.y, 0.0f, 1.0f);
-	FragColor = texture(boundTexture, oTexCoords);
+	FragColor = texture(boundTexture, oTexCoords) * colorTint;
 	if (FragColor.a < 0.1)
 	{
 		discard;
@@ -117,17 +119,27 @@ void main()
 
 	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size)
 	{
+		DrawQuad(position, size, { 1, 1, 1, 1 });
+	}
+
+	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& colorTint)
+	{
+		DrawQuad({ position.x, position.y, 0 }, size, colorTint);
+	}
+
+	void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& colorTint)
+	{
 		s_Data->shader.Bind();
 
 		s_Data->whiteTexture.Bind();
-		
+
 		glm::mat4 transform = // TRS - transformation rotation scale
 			glm::translate(glm::mat4(1.0f), { position.x, position.y, 0.0f }) *
 			// rotation
 			glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
 		s_Data->shader.SetUniform("transform", transform);
-
+		s_Data->shader.SetUniform("colorTint", colorTint);
 
 		s_Data->vertexArray.Bind();
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -136,15 +148,26 @@ void main()
 
 	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, Texture2D& texture)
 	{
+		DrawQuad({ position.x, position.y, 0.0f }, size, texture, { 1, 1, 1, 1 });
+	}
+
+	void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, Texture2D& texture)
+	{
+		DrawQuad(position, size, texture, { 1, 1, 1, 1 });
+	}
+
+	void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, Texture2D& texture, const glm::vec4& colorTint)
+	{
 		s_Data->shader.Bind();
 		texture.Bind();
 
 		glm::mat4 transform = // TRS - transformation rotation scale
-			glm::translate(glm::mat4(1.0f), { position.x, position.y, 0.0f }) *
+			glm::translate(glm::mat4(1.0f), position) *
 			// rotation
 			glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
 		s_Data->shader.SetUniform("transform", transform);
+		s_Data->shader.SetUniform("colorTint", colorTint);
 
 		s_Data->vertexArray.Bind();
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

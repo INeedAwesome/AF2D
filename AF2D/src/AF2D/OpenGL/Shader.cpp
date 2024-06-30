@@ -71,8 +71,28 @@ void AF::Shader::SetUniform(const std::string& name, int value)
 	glUniform1i(FindUniformLocation(name), value);
 }
 
+void AF::Shader::SetUniform(const std::string& name, float value)
+{
+	glUniform1f(FindUniformLocation(name), value);
+}
+
 void AF::Shader::SetUniform(const std::string& name, const glm::mat4& matrix)
 {
 	glUniformMatrix4fv(FindUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+void AF::Shader::SetUniform(const std::string& name, const glm::vec2& vec)
+{
+	glUniform2f(FindUniformLocation(name), vec.x, vec.y);
+}
+
+void AF::Shader::SetUniform(const std::string& name, const glm::vec3& vec)
+{
+	glUniform3f(FindUniformLocation(name), vec.x, vec.y, vec.z);
+}
+
+void AF::Shader::SetUniform(const std::string& name, const glm::vec4& vec)
+{
+	glUniform4f(FindUniformLocation(name), vec.x, vec.y, vec.z, vec.w);
 }
 

@@ -28,7 +28,11 @@ namespace AF {
 		static void SetScale(int scale);
 
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size);
+		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& colorTint);
+		static void DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& colorTint);
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, Texture2D& texture);
+		static void DrawQuad(const glm::vec3& position, const glm::vec2& size, Texture2D& texture);
+		static void DrawQuad(const glm::vec3& position, const glm::vec2& size, Texture2D& texture, const glm::vec4& colorTint);
 
 	private:
 
