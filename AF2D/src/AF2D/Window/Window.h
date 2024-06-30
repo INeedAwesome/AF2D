@@ -34,6 +34,7 @@ namespace AF {
 
 		bool IsOpen() { return !m_ShouldClose; }
 		void Close();
+		void UpdateWidthHeight();
 		void Update();
 
 	private:
@@ -53,6 +54,7 @@ namespace AF {
 		std::vector<Event::Type> m_Events;
 
 		HGLRC m_OpenGLRenderingContext;
+		HDC m_WindowDeviceContext;
 
 	};
 

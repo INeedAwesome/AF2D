@@ -15,7 +15,6 @@ namespace AF {
 		void Bind();
 		void Unbind();
 
-		unsigned int FindUniformLocation(const std::string& name);
 
 		void SetUniform(const std::string& name, int value);
 		void SetUniform(const std::string& name, float value);
@@ -25,7 +24,11 @@ namespace AF {
 		void SetUniform(const std::string& name, const glm::vec4& vec);
 
 	private:
+		unsigned int GetUniformLocation(const std::string& name);
+
+	private:
 		unsigned int m_ShaderProgram;
+		std::unordered_map<std::string, int32_t> m_UniformLocationCache;
 
 	};
 

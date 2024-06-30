@@ -61,38 +61,45 @@ void AF::Shader::Unbind()
 	glUseProgram(0);
 }
 
-unsigned int AF::Shader::FindUniformLocation(const std::string& name)
+unsigned int AF::Shader::GetUniformLocation(const std::string& name)
 {
-	return glGetUniformLocation(m_ShaderProgram, name.c_str());
+	auto res = m_UniformLocationCache.find(name.c_str());
+	if (res != m_UniformLocationCache.end())
+		return res->second;
+
+	unsigned int location = glGetUniformLocation(m_ShaderProgram, name.c_str());
+	m_UniformLocationCache[name] = location;
+	return location;
+	
 }
 
 void AF::Shader::SetUniform(const std::string& name, int value)
 {
-	glUniform1i(FindUniformLocation(name), value);
+	glUniform1i(GetUniformLocation(name), value);
 }
 
 void AF::Shader::SetUniform(const std::string& name, float value)
 {
-	glUniform1f(FindUniformLocation(name), value);
+	glUniform1f(GetUniformLocation(name), value);
 }
 
 void AF::Shader::SetUniform(const std::string& name, const glm::mat4& matrix)
 {
-	glUniformMatrix4fv(FindUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void AF::Shader::SetUniform(const std::string& name, const glm::vec2& vec)
 {
-	glUniform2f(FindUniformLocation(name), vec.x, vec.y);
+	glUniform2f(GetUniformLocation(name), vec.x, vec.y);
 }
 
 void AF::Shader::SetUniform(const std::string& name, const glm::vec3& vec)
 {
-	glUniform3f(FindUniformLocation(name), vec.x, vec.y, vec.z);
+	glUniform3f(GetUniformLocation(name), vec.x, vec.y, vec.z);
 }
 
 void AF::Shader::SetUniform(const std::string& name, const glm::vec4& vec)
 {
-	glUniform4f(FindUniformLocation(name), vec.x, vec.y, vec.z, vec.w);
+	glUniform4f(GetUniformLocation(name), vec.x, vec.y, vec.z, vec.w);
 }
 

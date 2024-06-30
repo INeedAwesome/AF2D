@@ -1,6 +1,8 @@
 #include "afpch.h"
 #include "Window.h"
 
+#include <dwmapi.h>
+#pragma comment(lib, "Dwmapi.lib")
 #include <glad/glad.h>
 
 #include "AF2D/Input/Input.h"
@@ -83,6 +85,10 @@ AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
 		return;
 	}
 
+	// https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/apply-rounded-corners
+	DWM_WINDOW_CORNER_PREFERENCE attr = DWMWCP_ROUNDSMALL;
+	DwmSetWindowAttribute(m_WindowHandle, DWMWA_WINDOW_CORNER_PREFERENCE , &attr, sizeof(DWM_WINDOW_CORNER_PREFERENCE));
+
 	InitOpenGL();
 
 	if (fullscreen)
@@ -99,10 +105,13 @@ AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
 	ShowWindow(m_WindowHandle, maximized ? SW_SHOWMAXIMIZED : SW_SHOW);
 
 	UpdateWindow(m_WindowHandle);
+
+	m_WindowDeviceContext = GetDC(m_WindowHandle);
 }
 
 AF::Window::~Window()
 {
+	ReleaseDC(m_WindowHandle, m_WindowDeviceContext);
 	DestroyWindow(m_WindowHandle);
 	UnregisterClass(m_ClassName.c_str(), GetModuleHandle(nullptr));
 }
@@ -124,15 +133,17 @@ bool AF::Window::PollEvent()
 	return false;
 }
 
-void AF::Window::Update()
+void AF::Window::UpdateWidthHeight()
 {
 	RECT rect;
 	GetClientRect(m_WindowHandle, &rect);
 	m_Width = rect.right - rect.left;
 	m_Height = rect.bottom - rect.top;
-	
-	HDC windowDC = GetDC(m_WindowHandle);
-	SwapBuffers(windowDC);
+}
+
+void AF::Window::Update()
+{
+	SwapBuffers(m_WindowDeviceContext);
 }
 
 AF::Event::Type AF::Window::GetEvent()
@@ -218,7 +229,7 @@ LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 		thisWindow->PushEvent(AF::Event::RESIZED);
-		thisWindow->Update();
+		thisWindow->UpdateWidthHeight();
 		break;
 
 	case WM_MOUSEMOVE:

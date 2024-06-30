@@ -73,7 +73,7 @@ int Main()
 		
 		window.Update();
 
-		Sleep(1);
+		//Sleep(1);
 	}
 
 	return 0;
