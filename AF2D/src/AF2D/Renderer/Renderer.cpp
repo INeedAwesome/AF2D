@@ -95,8 +95,6 @@ void main()
 	{
 		glClearColor(0.2f, 0.4f, 1.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		
-		camera.SetRotation(camera.GetRotation() + 0.1f);
 
 		glm::mat4 projection = glm::ortho(0.0f, ((float)s_Data->Width / (float)s_Data->Height) * (float)s_Data->Scale, 0.0f, (float)s_Data->Scale, -100.0f, 100.0f);
 
