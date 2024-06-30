@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "AF2D/OpenGL/Texture2D.h"
+#include "AF2D/Renderer/Camera.h"
 
 namespace AF {
 
@@ -14,7 +15,7 @@ namespace AF {
 		static void Init();
 		static void Shutdown();
 
-		static void Begin();
+		static void Begin(Camera& camera);
 		static void End();
 
 		/*!

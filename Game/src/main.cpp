@@ -36,6 +36,8 @@ int Main()
 		}
 	}
 
+	AF::Camera camera;
+
 	Quad playerQuad;
 	playerQuad.Position = { 8, 8, 1};
 	playerQuad.Size = { 1, 1 };
@@ -60,7 +62,7 @@ int Main()
 		if (AF::Input::IsKeyPressed('D'))
 			playerQuad.Position.x += 0.1f;
 
-		AF::Renderer::Begin();
+		AF::Renderer::Begin(camera);
 		
 		for (int i = 0; i < quads.size(); i++)
 		{

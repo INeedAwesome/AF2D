@@ -47,12 +47,13 @@ layout (location = 1) in vec2 aTexCoords;
 
 out vec2 oTexCoords;
 
-uniform mat4 transform;
+uniform mat4 projection;
 uniform mat4 view;
+uniform mat4 transform;
 
 void main()
 {
-	gl_Position = view * transform * vec4(aPos, 1.0);
+	gl_Position = projection * view * transform * vec4(aPos, 1.0);
 	oTexCoords = aTexCoords;
 }
 )""";
@@ -76,8 +77,6 @@ void main()
 } 
 )""";
 		s_Data->shader.Init(vertexShaderSource, fragmentShaderSource);
-		glm::mat4 view = glm::ortho(0.0f, ((float)s_Data->Width / (float)s_Data->Height) * (float)s_Data->Scale, 0.0f, (float)s_Data->Scale, -100.0f, 100.0f);
-		s_Data->shader.SetUniform("view", view);
 
 		unsigned char* data = new unsigned char[3];
 		data[0] = 255; data[1] = 255; data[2] = 255;
@@ -92,10 +91,21 @@ void main()
 	{
 	}
 
-	void Renderer::Begin()
+	void Renderer::Begin(Camera& camera)
 	{
 		glClearColor(0.2f, 0.4f, 1.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		
+		camera.SetRotation(camera.GetRotation() + 0.1f);
+
+		glm::mat4 projection = glm::ortho(0.0f, ((float)s_Data->Width / (float)s_Data->Height) * (float)s_Data->Scale, 0.0f, (float)s_Data->Scale, -100.0f, 100.0f);
+
+		glm::mat4 view = glm::translate(glm::mat4(1), -camera.GetPosition());
+		view = glm::rotate(view, glm::radians(camera.GetRotation()), {0, 0, 1});
+		view = glm::scale(view, {1, 1, 1});
+
+		s_Data->shader.SetUniform("projection", projection);
+		s_Data->shader.SetUniform("view", view);
 	}
 
 	void Renderer::End()
@@ -107,10 +117,7 @@ void main()
 		glViewport(0, 0, newWidth, newHeight);
 		s_Data->Width = newWidth;
 		s_Data->Height= newHeight;
-
-		glm::mat4 view = glm::ortho(0.0f, ((float)s_Data->Width / (float)s_Data->Height) * (float)s_Data->Scale, 0.0f, (float)s_Data->Scale, -100.0f, 100.0f);
-		s_Data->shader.SetUniform("view", view);
-	}
+}
 
 	void Renderer::SetScale(int scale)
 	{
