@@ -23,6 +23,8 @@ namespace AF {
 		Window(const std::wstring& title, int width, int height, Mode mode = CUSTOM);
 		~Window();
 
+		HWND GetHandle() const { return m_WindowHandle; }
+
 		bool PollEvent();
 		AF::Event::Type GetEvent();
 		void PushEvent(AF::Event::Type type);

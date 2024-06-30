@@ -3,6 +3,8 @@
 
 #include <glad/glad.h>
 
+#include "AF2D/Input/Input.h"
+
 LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 AF::Window::Window(const std::wstring& title, int width, int height, Mode mode)
@@ -221,6 +223,17 @@ LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_MOUSEMOVE:
 		thisWindow->PushEvent(AF::Event::MOUSE_MOVE);
+		break;
+
+	case WM_KEYUP:
+	case WM_KEYDOWN:
+		AF::Input::HandleKeysInput(msg, wParam, lParam);
+		break;
+
+	case WM_INPUT:
+		AF::Input::HandleRawInput(wParam, lParam);
+		if (GET_RAWINPUT_CODE_WPARAM(wParam) == RIM_INPUT)
+			DefWindowProc(hwnd, msg, wParam, lParam);
 		break;
 
 	default:

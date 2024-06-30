@@ -11,6 +11,8 @@ int Main()
 {
 	AF::Window window(L"2D Game", 1280, 720, AF::Window::CUSTOM);
 
+	AF::Input::RegisterRawInput();
+
 	AF::Renderer::Init();
 	AF::Renderer::SetScale(16);
 	AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
@@ -49,9 +51,17 @@ int Main()
 				AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
 		}
 
+		if (AF::Input::IsKeyPressed('W'))
+			playerQuad.Position.y += 0.1f;
+		if (AF::Input::IsKeyPressed('S'))
+			playerQuad.Position.y -= 0.1f;
+		if (AF::Input::IsKeyPressed('A'))
+			playerQuad.Position.x -= 0.1f;
+		if (AF::Input::IsKeyPressed('D'))
+			playerQuad.Position.x += 0.1f;
+
 		AF::Renderer::Begin();
 		
-
 		for (int i = 0; i < quads.size(); i++)
 		{
 			AF::Renderer::DrawQuad(quads[i].Position, quads[i].Size, grassTexture);
@@ -59,10 +69,8 @@ int Main()
 
 		AF::Renderer::DrawQuad(playerQuad.Position, playerQuad.Size, playerTexture);
 
-		
-
 		AF::Renderer::End();
-
+		
 		window.Update();
 
 		Sleep(1);
