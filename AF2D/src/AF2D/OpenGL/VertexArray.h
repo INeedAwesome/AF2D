@@ -2,11 +2,11 @@
 
 namespace AF {
 
-	class vertexArray
+	class VertexArray
 	{
 	public:
-		vertexArray() = default;
-		~vertexArray();
+		VertexArray() = default;
+		~VertexArray();
 
 		void Init(float* verticesData, int vertArraySize, unsigned int* indicesData, int indicesArraySize);
 		void Bind();

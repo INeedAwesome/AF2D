@@ -16,7 +16,7 @@ namespace AF {
 		Texture2D() = default;
 		~Texture2D();
 
-		void Init(const std::string& filepath, TextureScaling scaling);
+		void Init(const std::string& filepath, TextureScaling scaling = LINEAR);
 		void Init(const TextureBuffer& buffer, TextureScaling scaling);
 
 		void Bind();

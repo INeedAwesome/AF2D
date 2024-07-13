@@ -12,9 +12,9 @@
 namespace AF {
 
 	struct RendererData {
-		vertexArray vertexArray;
-		Shader shader;
-		Texture2D whiteTexture;
+		VertexArray RenderVertexArray;
+		Shader RenderShader;
+		Texture2D RendererWhiteTexture;
 
 		unsigned int Width;
 		unsigned int Height;
@@ -39,7 +39,7 @@ namespace AF {
 	{
 		s_Data = new RendererData();
 
-		s_Data->vertexArray.Init(verticesData, _countof(verticesData), elements, _countof(elements));
+		s_Data->RenderVertexArray.Init(verticesData, _countof(verticesData), elements, _countof(elements));
 
 		std::string vertexShaderSource = R"""(#version 330 core
 layout (location = 0) in vec3 aPos;
@@ -76,12 +76,14 @@ void main()
 	}
 } 
 )""";
-		s_Data->shader.Init(vertexShaderSource, fragmentShaderSource);
+		s_Data->RenderShader.Init(vertexShaderSource, fragmentShaderSource);
 
 		unsigned char* data = new unsigned char[3];
 		data[0] = 255; data[1] = 255; data[2] = 255;
 		TextureBuffer buffer{data, 1, 1, 3};
-		s_Data->whiteTexture.Init(buffer, Texture2D::LINEAR);
+		s_Data->RendererWhiteTexture.Init(buffer, Texture2D::LINEAR);
+
+		s_Data->Scale = 1;
 
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -102,8 +104,8 @@ void main()
 		view = glm::rotate(view, glm::radians(camera.GetRotation()), {0, 0, 1});
 		view = glm::scale(view, {1, 1, 1});
 
-		s_Data->shader.SetUniform("projection", projection);
-		s_Data->shader.SetUniform("view", view);
+		s_Data->RenderShader.SetUniform("projection", projection);
+		s_Data->RenderShader.SetUniform("view", view);
 	}
 
 	void Renderer::End()
@@ -134,21 +136,21 @@ void main()
 
 	void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& colorTint)
 	{
-		s_Data->shader.Bind();
+		s_Data->RenderShader.Bind();
 
-		s_Data->whiteTexture.Bind();
+		s_Data->RendererWhiteTexture.Bind();
 
 		glm::mat4 transform = // TRS - transformation rotation scale
 			glm::translate(glm::mat4(1.0f), { position.x, position.y, 0.0f }) *
 			// rotation
 			glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		s_Data->shader.SetUniform("transform", transform);
-		s_Data->shader.SetUniform("colorTint", colorTint);
+		s_Data->RenderShader.SetUniform("transform", transform);
+		s_Data->RenderShader.SetUniform("colorTint", colorTint);
 
-		s_Data->vertexArray.Bind();
+		s_Data->RenderVertexArray.Bind();
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		s_Data->vertexArray.Unbind();
+		s_Data->RenderVertexArray.Unbind();
 	}
 
 	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, Texture2D& texture)
@@ -163,7 +165,7 @@ void main()
 
 	void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, Texture2D& texture, const glm::vec4& colorTint)
 	{
-		s_Data->shader.Bind();
+		s_Data->RenderShader.Bind();
 		texture.Bind();
 
 		glm::mat4 transform = // TRS - transformation rotation scale
@@ -171,12 +173,12 @@ void main()
 			// rotation
 			glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		s_Data->shader.SetUniform("transform", transform);
-		s_Data->shader.SetUniform("colorTint", colorTint);
+		s_Data->RenderShader.SetUniform("transform", transform);
+		s_Data->RenderShader.SetUniform("colorTint", colorTint);
 
-		s_Data->vertexArray.Bind();
+		s_Data->RenderVertexArray.Bind();
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		s_Data->vertexArray.Unbind();
+		s_Data->RenderVertexArray.Unbind();
 	}
 
 }

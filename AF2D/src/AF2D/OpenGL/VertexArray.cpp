@@ -5,12 +5,12 @@
 
 namespace AF {
 
-	vertexArray::~vertexArray()
+	VertexArray::~VertexArray()
 	{
 		glDeleteVertexArrays(1, &m_VertexArrayObject);
 	}
 
-	void vertexArray::Init(float* verticesData, int vertArraySize, unsigned int* indicesData, int indicesArraySize)
+	void VertexArray::Init(float* verticesData, int vertArraySize, unsigned int* indicesData, int indicesArraySize)
 	{
 		glGenVertexArrays(1, &m_VertexArrayObject);
 		glBindVertexArray(m_VertexArrayObject);
@@ -32,12 +32,12 @@ namespace AF {
 		glBindVertexArray(0);
 	}
 
-	void vertexArray::Bind()
+	void VertexArray::Bind()
 	{
 		glBindVertexArray(m_VertexArrayObject);
 	}
 
-	void vertexArray::Unbind()
+	void VertexArray::Unbind()
 	{
 		glBindVertexArray(0);
 	}
