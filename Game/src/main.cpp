@@ -8,6 +8,7 @@ struct GameState {
 	bool isHandDown = false;
 	int timesHandDown = 0;
 
+	AF::Texture2D background;
 	AF::Texture2D chooseHand;
 	AF::Texture2D handInAir;
 	AF::Texture2D handDown;
@@ -34,7 +35,7 @@ int Main()
 	GameState gameState{};
 	const int width = 1280;
 	const int height = 720;
-	const float aspectRatio = (float)width / (float)height;
+	float aspectRatio = (float)width / (float)height;
 
 	srand(time(NULL));
 
@@ -43,13 +44,20 @@ int Main()
 
 	AF::Renderer::Init();
 	AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
-	
-	AF::Input::RegisterRawInput();
 
 	Quad screenQuad{};
 	screenQuad.Size = { 1 * aspectRatio, 1 };
+	Quad rockQuad{};
+	rockQuad.Position = { aspectRatio * 0.2f - 0.15f, 0.1f, 2 };
+	rockQuad.Size = { 0.3f, 0.3f };
+	Quad paperQuad{};
+	paperQuad.Position = { aspectRatio * 0.5f - 0.15f, 0.1f, 2 };
+	paperQuad.Size = { 0.3f, 0.3f };
+	Quad scissorsQuad{};
+	scissorsQuad.Position = { aspectRatio * 0.8f - 0.15f, 0.1f, 2 };
+	scissorsQuad.Size = { 0.3f, 0.3f };
 	
-	gameState.chooseHand.Init("assets/Bild1.png");
+	gameState.background.Init("assets/background.png", AF::Texture2D::NEAREST);
 	gameState.handInAir.Init("assets/up.png");
 	gameState.handDown.Init("assets/down.png");
 
@@ -57,8 +65,7 @@ int Main()
 	gameState.paperTexture.Init("assets/paper.png");
 	gameState.scissorsTexture.Init("assets/scissors.png");
 
-	//ResetGame(gameState);
-	int currentTextureIndex = 0;
+	int currentGameState = 0;
 	int randomTextureIndex = 0;
 
 	while (window.IsOpen())
@@ -70,8 +77,12 @@ int Main()
 				window.Close();
 			if (event == AF::Event::RESIZED)
 			{
+				aspectRatio = (float)window.GetWidth() / (float)window.GetHeight();
 				AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
-				screenQuad.Size.x = ((float)window.GetWidth() / (float)window.GetHeight());
+				screenQuad.Size.x = (aspectRatio);
+				rockQuad.Position = { aspectRatio * 0.2f - 0.15f, 0.1f, 2 };
+				paperQuad.Position = { aspectRatio * 0.5f - 0.15f, 0.1f, 2 };
+				scissorsQuad.Position = { aspectRatio * 0.8f - 0.15f, 0.1f, 2 };
 			}
 		}
 
@@ -84,18 +95,18 @@ int Main()
 		else if (AF::Input::WasKeyPressed('R'))
 		{
 			ResetGame(gameState, randomTextureIndex);
-			currentTextureIndex = 0;
+			currentGameState = 0;
 		}
 
 		if (gameState.selectedHand == 0)
-			currentTextureIndex = 0;
+			currentGameState = 0;
 		else 
 		{
 			gameState.frames++;
-				if (gameState.isHandDown)
-				currentTextureIndex = 1;
+			if (gameState.isHandDown)
+				currentGameState = 1;
 			else
-				currentTextureIndex = 2;
+				currentGameState = 2;
 			if (gameState.frames >= 30)
 			{
 				gameState.isHandDown = !gameState.isHandDown;
@@ -104,15 +115,18 @@ int Main()
 			}
 
 			if (gameState.timesHandDown >= 6)
-				currentTextureIndex = randomTextureIndex + 3;
+				currentGameState = randomTextureIndex + 3;
 		}
 
 		AF::Renderer::Begin(camera);
 
-		switch (currentTextureIndex)
+		switch (currentGameState)
 		{
 		case 0:
-			AF::Renderer::DrawQuad(screenQuad.Position, screenQuad.Size, gameState.chooseHand);
+			AF::Renderer::DrawQuad(screenQuad.Position, screenQuad.Size, gameState.background);
+			AF::Renderer::DrawQuad(rockQuad.Position, rockQuad.Size, gameState.rockTexture);
+			AF::Renderer::DrawQuad(paperQuad.Position, paperQuad.Size, gameState.paperTexture);
+			AF::Renderer::DrawQuad(scissorsQuad.Position, scissorsQuad.Size, gameState.scissorsTexture);
 			break;
 		case 1:
 			AF::Renderer::DrawQuad(screenQuad.Position, screenQuad.Size, gameState.handDown);
