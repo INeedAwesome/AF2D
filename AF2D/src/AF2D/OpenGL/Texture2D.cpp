@@ -18,6 +18,12 @@ namespace AF {
 
 		stbi_set_flip_vertically_on_load(true);
 		buffer.m_Data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+		if (!buffer.m_Data)
+		{
+			std::cout << "STBI could not read the image '" << filepath << "'." << std::endl;
+			stbi_image_free(buffer.m_Data);
+			return;
+		}
 		buffer.m_Width = width;
 		buffer.m_Height = height;
 		buffer.m_Components = channels;
@@ -56,7 +62,7 @@ namespace AF {
 		int glScale = scaling == TextureScaling::NEAREST ? GL_NEAREST : GL_LINEAR;
 		
 		glGenTextures(1, &m_TextureID);
-		glBindTexture(GL_TEXTURE_2D, m_TextureID);
+		Bind();
 
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, buffer.m_Width, buffer.m_Height, 0, format, GL_UNSIGNED_BYTE, buffer.m_Data);
 
@@ -66,6 +72,7 @@ namespace AF {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glScale);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
+		Unbind();
 		m_Width = buffer.m_Width;
 		m_Height = buffer.m_Height;
 	}
