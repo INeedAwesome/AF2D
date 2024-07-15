@@ -2,45 +2,64 @@
 
 #include <iostream>
 
+struct GameState {
+	int frames = 0;
+	int selectedHand = 0;
+	bool isHandDown = false;
+	int timesHandDown = 0;
+
+	AF::Texture2D chooseHand;
+	AF::Texture2D handInAir;
+	AF::Texture2D handDown;
+
+	AF::Texture2D rockTexture;
+	AF::Texture2D paperTexture;
+	AF::Texture2D scissorsTexture;
+
+	GameState()
+	: chooseHand(), handInAir(), handDown(), rockTexture(), paperTexture(), scissorsTexture()
+	{}
+
+};
+
 struct Quad {
 	glm::vec3 Position;
 	glm::vec2 Size;
 };
 
+void ResetGame(GameState& state, int& randomTextureIndex);
+
 int Main()
 {
-	AF::Window window(L"2D Game", 1280, 720, AF::Window::CUSTOM);
+	GameState gameState{};
+	const int width = 1280;
+	const int height = 720;
+	const float aspectRatio = (float)width / (float)height;
 
-	AF::Input::RegisterRawInput();
+	srand(time(NULL));
 
-	AF::Renderer::Init();
-	AF::Renderer::SetScale(16);
-	AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
-
-	AF::Texture2D playerTexture; 
-	playerTexture.Init("assets/gruminion.png", AF::Texture2D::LINEAR);
-
-	AF::Texture2D grassTexture;
-	grassTexture.Init("assets/grass.png", AF::Texture2D::NEAREST);
-
-
-	std::vector<Quad> quads;
-	for (int i = 0; i < 32; i++)
-	{
-		for (int j = 0; j < 16; j++)
-		{
-			Quad quad{};
-			quad.Position = { i, j, 0};
-			quad.Size = { 1 , 1 };
-			quads.push_back(quad);
-		}
-	}
-
+	AF::Window window(L"2D Game", width, height, AF::Window::CUSTOM);
 	AF::Camera camera;
 
-	Quad playerQuad;
-	playerQuad.Position = { 8, 8, 1};
-	playerQuad.Size = { 1, 1 };
+	AF::Renderer::Init();
+	AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
+	
+	AF::Input::RegisterRawInput();
+
+	Quad screenQuad{};
+	screenQuad.Size = { 1 * aspectRatio, 1 };
+	
+	gameState.chooseHand.Init("assets/Bild1.png");
+	gameState.handInAir.Init("assets/up.png");
+	gameState.handDown.Init("assets/down.png");
+
+	gameState.rockTexture.Init("assets/rock.png");
+	gameState.paperTexture.Init("assets/paper.png");
+	gameState.scissorsTexture.Init("assets/scissors.png");
+
+	//ResetGame(gameState);
+	int currentTextureIndex = 0;
+	int randomTextureIndex = 0;
 
 	while (window.IsOpen())
 	{
@@ -50,34 +69,76 @@ int Main()
 			if (event == AF::Event::CLOSED)
 				window.Close();
 			if (event == AF::Event::RESIZED)
+			{
 				AF::Renderer::Resize(window.GetWidth(), window.GetHeight());
+				screenQuad.Size.x = ((float)window.GetWidth() / (float)window.GetHeight());
+			}
 		}
 
-		if (AF::Input::IsKeyPressed('W'))
-			playerQuad.Position.y += 0.1f;
-		if (AF::Input::IsKeyPressed('S'))
-			playerQuad.Position.y -= 0.1f;
-		if (AF::Input::IsKeyPressed('A'))
-			playerQuad.Position.x -= 0.1f;
-		if (AF::Input::IsKeyPressed('D'))
-			playerQuad.Position.x += 0.1f;
+		if (AF::Input::WasKeyPressed('1'))
+			gameState.selectedHand = 1;
+		else if (AF::Input::WasKeyPressed('2'))
+			gameState.selectedHand = 2;
+		else if (AF::Input::WasKeyPressed('3'))
+			gameState.selectedHand = 3;
+		else if (AF::Input::WasKeyPressed('R'))
+		{
+			ResetGame(gameState, randomTextureIndex);
+			currentTextureIndex = 0;
+		}
 
-		camera.SetPosition({ playerQuad.Position.x-12, playerQuad.Position.y - 8, 0 });
+		if (gameState.selectedHand == 0)
+			currentTextureIndex = 0;
+		else 
+		{
+			gameState.frames++;
+				if (gameState.isHandDown)
+				currentTextureIndex = 1;
+			else
+				currentTextureIndex = 2;
+			if (gameState.frames >= 30)
+			{
+				gameState.isHandDown = !gameState.isHandDown;
+				gameState.frames = 0;
+				gameState.timesHandDown++;
+			}
+
+			if (gameState.timesHandDown >= 6)
+				currentTextureIndex = randomTextureIndex + 3;
+		}
 
 		AF::Renderer::Begin(camera);
-		
-		for (int i = 0; i < quads.size(); i++)
+
+		switch (currentTextureIndex)
 		{
-			AF::Renderer::DrawQuad(quads[i].Position, quads[i].Size, grassTexture);
+		case 0:
+			AF::Renderer::DrawQuad(screenQuad.Position, screenQuad.Size, gameState.chooseHand);
+			break;
+		case 1:
+			AF::Renderer::DrawQuad(screenQuad.Position, screenQuad.Size, gameState.handDown);
+			break;
+		case 2:
+			AF::Renderer::DrawQuad(screenQuad.Position, screenQuad.Size, gameState.handInAir);
+			break;
+		case 3:
+			AF::Renderer::DrawQuad(screenQuad.Position, screenQuad.Size, gameState.rockTexture);
+			break;
+		case 4:
+			AF::Renderer::DrawQuad(screenQuad.Position, screenQuad.Size, gameState.paperTexture);
+			break;
+		case 5:
+			AF::Renderer::DrawQuad(screenQuad.Position, screenQuad.Size, gameState.scissorsTexture);
+			break;
+		default:
+			break;
 		}
 
-		AF::Renderer::DrawQuad(playerQuad.Position, playerQuad.Size, playerTexture);
 
 		AF::Renderer::End();
 		
 		window.Update();
 
-		//Sleep(1);
+		Sleep(1);
 	}
 
 	return 0;
@@ -94,3 +155,21 @@ int main(int argc, char* argv[])
 	return Main();
 }
 #endif
+
+void ResetGame(GameState& state, int& randomTextureIndex)
+{
+	state.frames = 0;
+	state.selectedHand = 0;
+	state.isHandDown = false;
+	state.timesHandDown = 0;
+
+	int random = rand() % 3;
+	if (random == 0)
+		randomTextureIndex = 0;
+	else if (random == 1)
+		randomTextureIndex = 1;
+	else if (random == 2)
+		randomTextureIndex = 2;
+
+
+}
